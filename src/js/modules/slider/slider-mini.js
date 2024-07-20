@@ -5,6 +5,7 @@ export default class MiniSlider extends Slider {
         super(container, slides, next, prev, activeClass, animate, autoplay);
         this.slides = this.container.querySelectorAll('.slide-mini');
         this.slideCollection = this.createCollectionSlides(); // добавляем NodeList в массив для последующей работы с использованием методов массивов
+        this.interval = false;
     }
 
     // добавляем стилей для активых мини-слайдов
@@ -31,6 +32,11 @@ export default class MiniSlider extends Slider {
             this.slideCollection[0].querySelector('.card__controls-arrow').style.opacity = '1';
             this.slideCollection[0].querySelector('.card__controls').style.opacity = '1';
         }
+    }
+
+    // функция включения автоматического показа слайдов
+    activeShowSlide() {
+        this.interval = setInterval(() => this.nextSlide(), 5000);
     }
 
     // функция по добавлению слайдов в массив
@@ -89,7 +95,15 @@ export default class MiniSlider extends Slider {
         }
 
         if (this.autoplay) {
-            setInterval(() => this.nextSlide(), 5000);
+            this.activeShowSlide();
+
+            this.container.addEventListener('mouseenter', () => {
+                clearInterval(this.interval);
+            });
+
+            this.container.addEventListener('mouseleave', () => {
+                this.activeShowSlide();
+            });
         } 
     }
 }

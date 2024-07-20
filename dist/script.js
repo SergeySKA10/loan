@@ -2,6 +2,43 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./src/js/modules/difference.js":
+/*!**************************************!*\
+  !*** ./src/js/modules/difference.js ***!
+  \**************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Difference)
+/* harmony export */ });
+class Difference {
+  constructor(container, cards) {
+    this.container = document.querySelector(container);
+    this.cards = this.container.querySelectorAll(cards);
+    this.index = 0;
+  }
+  bindCards() {
+    this.cards[this.cards.length - 1].addEventListener('click', () => {
+      this.cards[this.index].classList.add('animated', 'slideInUp');
+      this.cards[this.index].style.display = 'flex';
+      this.index += 1;
+      if (this.index == this.cards.length - 1) {
+        this.cards[this.cards.length - 1].remove();
+      }
+    });
+  }
+  render() {
+    this.cards.forEach(card => {
+      card.style.display = 'none';
+    });
+    this.cards[this.cards.length - 1].style.display = 'flex';
+    this.bindCards();
+  }
+}
+
+/***/ }),
+
 /***/ "./src/js/modules/slider/slider-main.js":
 /*!**********************************************!*\
   !*** ./src/js/modules/slider/slider-main.js ***!
@@ -94,6 +131,7 @@ class MiniSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
     super(container, slides, next, prev, activeClass, animate, autoplay);
     this.slides = this.container.querySelectorAll('.slide-mini');
     this.slideCollection = this.createCollectionSlides(); // добавляем NodeList в массив для последующей работы с использованием методов массивов
+    this.interval = false;
   }
 
   // добавляем стилей для активых мини-слайдов
@@ -115,6 +153,11 @@ class MiniSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
       this.slideCollection[0].querySelector('.card__controls-arrow').style.opacity = '1';
       this.slideCollection[0].querySelector('.card__controls').style.opacity = '1';
     }
+  }
+
+  // функция включения автоматического показа слайдов
+  activeShowSlide() {
+    this.interval = setInterval(() => this.nextSlide(), 5000);
   }
 
   // функция по добавлению слайдов в массив
@@ -166,7 +209,13 @@ class MiniSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
       this.bindBtns();
     }
     if (this.autoplay) {
-      setInterval(() => this.nextSlide(), 5000);
+      this.activeShowSlide();
+      this.container.addEventListener('mouseenter', () => {
+        clearInterval(this.interval);
+      });
+      this.container.addEventListener('mouseleave', () => {
+        this.activeShowSlide();
+      });
     }
   }
 }
@@ -331,6 +380,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_slider_slider_main__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/slider/slider-main */ "./src/js/modules/slider/slider-main.js");
 /* harmony import */ var _modules_videoPlayer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/videoPlayer */ "./src/js/modules/videoPlayer.js");
 /* harmony import */ var _modules_slider_slider_mini__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/slider/slider-mini */ "./src/js/modules/slider/slider-mini.js");
+/* harmony import */ var _modules_difference__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/difference */ "./src/js/modules/difference.js");
+
 
 
 
@@ -367,6 +418,8 @@ window.addEventListener('DOMContentLoaded', () => {
     next: '.feed_next',
     activeClass: 'feed__item-active'
   }).render();
+  const differenceTenYers = new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officerold', '.officer__card-item').render();
+  const differenceNow = new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officernew', '.officer__card-item').render();
 });
 /******/ })()
 ;

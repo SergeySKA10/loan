@@ -3,6 +3,7 @@
 import MainSlider from "./modules/slider/slider-main";
 import VideoPlayer from "./modules/videoPlayer";
 import MiniSlider from "./modules/slider/slider-mini";
+import Difference from "./modules/difference";
 
 window.addEventListener('DOMContentLoaded', () => {
     const sliderMain = new MainSlider({
@@ -39,4 +40,8 @@ window.addEventListener('DOMContentLoaded', () => {
         next: '.feed_next',
         activeClass: 'feed__item-active'
     }).render();
+
+    const differenceTenYers = new Difference('.officerold', '.officer__card-item').render();
+    const differenceNow = new Difference('.officernew', '.officer__card-item').render(); 
+
 });
