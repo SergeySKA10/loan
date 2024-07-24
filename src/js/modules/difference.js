@@ -1,7 +1,13 @@
 export default class Difference {
     constructor(container, cards) {
         this.container = document.querySelector(container);
-        this.cards = this.container.querySelectorAll(cards);
+
+        try {
+            this.cards = this.container.querySelectorAll(cards);
+        } catch(e) {
+            console.log(e.message);
+        };
+
         this.index = 0;
     }
 
@@ -18,12 +24,19 @@ export default class Difference {
     }
 
     render() {
-        this.cards.forEach(card => {
-            card.style.display = 'none';
-        });
+        try {
+            this.cards.forEach(card => {
+                card.style.display = 'none';
+            });
+    
+            this.cards[this.cards.length - 1].style.display = 'flex';
+            
+            this.bindCards();
 
-        this.cards[this.cards.length - 1].style.display = 'flex';
-
-        this.bindCards();
+        } catch(e) {
+            if (e.name !== 'TypeError') {
+                throw e;
+            }
+        }
     }
 }

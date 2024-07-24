@@ -15,7 +15,12 @@ __webpack_require__.r(__webpack_exports__);
 class Difference {
   constructor(container, cards) {
     this.container = document.querySelector(container);
-    this.cards = this.container.querySelectorAll(cards);
+    try {
+      this.cards = this.container.querySelectorAll(cards);
+    } catch (e) {
+      console.log(e.message);
+    }
+    ;
     this.index = 0;
   }
   bindCards() {
@@ -29,11 +34,174 @@ class Difference {
     });
   }
   render() {
-    this.cards.forEach(card => {
-      card.style.display = 'none';
+    try {
+      this.cards.forEach(card => {
+        card.style.display = 'none';
+      });
+      this.cards[this.cards.length - 1].style.display = 'flex';
+      this.bindCards();
+    } catch (e) {
+      if (e.name !== 'TypeError') {
+        throw e;
+      }
+    }
+  }
+}
+
+/***/ }),
+
+/***/ "./src/js/modules/forms.js":
+/*!*********************************!*\
+  !*** ./src/js/modules/forms.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Form)
+/* harmony export */ });
+class Form {
+  constructor(forms, url) {
+    this.forms = document.querySelectorAll(forms);
+    this.url = url;
+    this.message = {
+      loadingText: 'Loading...',
+      loadingIcons: 'assets/icons/spinner.gif',
+      failText: 'An error has occurred',
+      failIcons: 'assets/icons/fail.png',
+      successText: 'Thanks for reaching out! A specialist will contact you shortly.',
+      successIcons: 'assets/icons/ok.png'
+    };
+  }
+  createMaskNumber() {
+    const inputs = document.querySelectorAll('[name="phone"]');
+    const createMask = function (event) {
+      let matrix = '+1 (___) ___-____';
+      let i = 0,
+        def = matrix.replace(/\D/g, ''),
+        val = this.value.replace(/\D/g, '');
+      if (def.length >= val.length) {
+        val = def;
+      }
+      this.value = matrix.replace(/./g, function (a) {
+        return /[_\d]/.test(a) && i < val.length ? val.charAt(i++) : i >= val.length ? '' : a;
+      });
+      if (event.type === 'blur') {
+        if (this.value.length == 2) {
+          this.value = '';
+        }
+      } else if (event.type === 'click') {
+        setCursorPosition(2, this);
+      } else {
+        setCursorPosition(this.value.length, this);
+      }
+    };
+    let setCursorPosition = (pos, elem) => {
+      elem.focus();
+      if (elem.setSelectionRange) {
+        elem.setSelectionRange(pos, pos);
+      } else if (elem.createTextRange) {
+        let range = elem.createTextRange();
+        range.collapse(true);
+        range.moveEnd('character', pos);
+        range.moveStart('character', pos);
+        range.select();
+      }
+    };
+    inputs.forEach(input => {
+      input.addEventListener('click', createMask);
+      input.addEventListener('input', createMask);
+      input.addEventListener('focus', createMask);
+      input.addEventListener('blur', createMask);
     });
-    this.cards[this.cards.length - 1].style.display = 'flex';
-    this.bindCards();
+  }
+  checkEmailInput() {
+    const emailInputs = document.querySelectorAll('[name="email"]');
+    emailInputs.forEach(item => {
+      item.addEventListener('change', () => {
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(item.value)) {
+          item.style.color = 'red';
+          item.value = 'Неверно введен email';
+          setTimeout(() => {
+            item.style.color = '';
+            item.value = '';
+          }, 3000);
+        }
+      });
+    });
+  }
+  checkTextInput() {
+    const textInputs = document.querySelectorAll('[name="name"]');
+    textInputs.forEach(input => {
+      input.addEventListener('keypress', e => {
+        if (e.key.match(/[^a-zA-Z0-9.!]/ig)) {
+          e.preventDefault();
+        }
+      });
+      input.addEventListener('input', () => {
+        if (input.value.match(/[^a-zA-Z0-9.!]/ig)) {
+          input.value = '';
+        }
+      });
+    });
+  }
+  async postData(url, data) {
+    const response = await fetch(url, {
+      method: "POST",
+      body: data
+    });
+    if (!response.ok) {
+      throw new Error(`Could not fetch: ${url}, status: ${response.status}`);
+    }
+    return await response.text();
+  }
+  submitForms() {
+    this.createMaskNumber();
+    this.checkEmailInput();
+    this.checkTextInput();
+    this.forms.forEach(form => {
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        let messageBlock = document.createElement('div');
+        messageBlock.style.cssText = `
+                    display: block;
+                    margin-top: 30px;
+                    text-align: left;
+                    color: #9ec73d;
+                `;
+        form.parentNode.append(messageBlock);
+        form.classList.add('animated', 'fadeOutUp');
+        setTimeout(() => {
+          form.style.display = 'none';
+        }, 400);
+        let statusImg = document.createElement('img');
+        statusImg.setAttribute('src', this.message.loadingIcons);
+        statusImg.classList.add('animated', 'fadeInUp');
+        messageBlock.append(statusImg);
+        let statusText = document.createElement('div');
+        statusText.textContent = this.message.loadingText;
+        messageBlock.append(statusText);
+        const formData = new FormData(form);
+        this.postData(this.url, formData).then(data => {
+          console.log(data);
+          statusText.textContent = this.message.successText;
+          statusImg.setAttribute('src', this.message.successIcons);
+        }).catch(e => {
+          console.log(e);
+          messageBlock.style.color = 'red';
+          statusText.textContent = `${this.message.failText}: Could not fetch: ${this.url}, status: ${e.status}`;
+          statusImg.setAttribute('src', this.message.failIcons);
+        }).finally(() => {
+          form.reset();
+          setTimeout(() => {
+            messageBlock.remove();
+            form.style.display = 'block';
+            form.classList.remove('fadeOutUp');
+            form.classList.add('fadeInUp');
+          }, 4000);
+        });
+      });
+    });
   }
 }
 
@@ -52,9 +220,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _slider__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./slider */ "./src/js/modules/slider/slider.js");
 
 class MainSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
-  constructor(container, slides, btns) {
-    super(container, btns);
-    this.slides = this.container.querySelectorAll('.slide-main');
+  constructor(container, slides, btns, next, prev) {
+    super(container, slides, btns, next, prev);
   }
   showSlides(n) {
     if (n > this.slides.length) {
@@ -69,7 +236,7 @@ class MainSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
 
     // добавление и удаление всплывающего блока на 3-тьем слайдере
     try {
-      if (n == 3) {
+      if (n == 3 && this.hansonBlock) {
         setTimeout(() => {
           this.hansonBlock.classList.add('slideInLeft');
           this.hansonBlock.style.display = 'block';
@@ -88,27 +255,46 @@ class MainSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
   plusSlides(n) {
     this.showSlides(this.slideIndex += n);
   }
-  render() {
-    // получение всплывающего блока
-    try {
-      this.hansonBlock = document.querySelector('.hanson');
-      this.hansonBlock.style.display = 'none';
-      this.hansonBlock.classList.add('animated');
-    } catch (e) {}
-    this.btns.forEach(btn => {
+
+  // функция переключения слайдов при событии 'click' на триггеры && logo
+  bindBtn() {
+    this.bindTriggers(this.btns, 1, true);
+    if (this.next && this.prev) {
+      this.bindTriggers(this.next, 1);
+      this.bindTriggers(this.prev, -1);
+    }
+  }
+
+  // функция привязки обработчика 'click' к триггерам 
+  bindTriggers(triggers, i, logo) {
+    triggers.forEach(btn => {
       btn.addEventListener('click', e => {
         e.preventDefault();
-        this.plusSlides(1);
+        e.stopPropagation();
+        this.plusSlides(i);
       });
-
-      // при клике на логотип - возвращаемся к 1 слайду
-      btn.parentNode.previousElementSibling.addEventListener('click', e => {
-        e.preventDefault();
-        this.slideIndex = 1;
-        this.showSlides(this.slideIndex);
-      });
+      if (logo) {
+        // при клике на логотип - возвращаемся к 1 слайду
+        btn.parentNode.previousElementSibling.addEventListener('click', e => {
+          e.preventDefault();
+          this.slideIndex = 1;
+          this.showSlides(this.slideIndex);
+        });
+      }
     });
-    this.showSlides(this.slideIndex);
+  }
+  render() {
+    // проверка на наличие свойства this.container
+    if (this.container) {
+      // получение всплывающего блока
+      try {
+        this.hansonBlock = document.querySelector('.hanson');
+        this.hansonBlock.style.display = 'none';
+        this.hansonBlock.classList.add('animated');
+      } catch (e) {}
+      this.bindBtn();
+      this.showSlides(this.slideIndex);
+    }
   }
 }
 
@@ -129,16 +315,14 @@ __webpack_require__.r(__webpack_exports__);
 class MiniSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
   constructor(container, slides, prev, next, activeClass, animate, autoplay) {
     super(container, slides, next, prev, activeClass, animate, autoplay);
-    this.slides = this.container.querySelectorAll('.slide-mini');
-    this.slideCollection = this.createCollectionSlides(); // добавляем NodeList в массив для последующей работы с использованием методов массивов
+    try {
+      this.slideCollection = this.createCollectionSlides(); // добавляем NodeList в массив для последующей работы с использованием методов массивов
+    } catch (e) {}
     this.interval = false;
   }
 
   // добавляем стилей для активых мини-слайдов
   decorizeSlides() {
-    for (let i = 0; i < this.slideCollection.length; i++) {
-      this.slideCollection[i];
-    }
     this.slideCollection.forEach(slide => {
       slide.classList.remove(this.activeClass);
       if (this.animate) {
@@ -177,15 +361,19 @@ class MiniSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
     });
   }
   bindTriggers() {
-    this.prev.addEventListener('click', () => {
-      let activeSlide = this.slideCollection[this.slideCollection.length - 1];
-      this.container.insertBefore(activeSlide, this.slideCollection[0]);
-      let elementPop = this.slideCollection.pop(this.slideCollection.length - 1);
-      this.slideCollection.unshift(elementPop);
-      this.decorizeSlides();
+    this.prev.forEach(btn => {
+      btn.addEventListener('click', () => {
+        let activeSlide = this.slideCollection[this.slideCollection.length - 1];
+        this.container.insertBefore(activeSlide, this.slideCollection[0]);
+        let elementPop = this.slideCollection.pop(this.slideCollection.length - 1);
+        this.slideCollection.unshift(elementPop);
+        this.decorizeSlides();
+      });
     });
-    this.next.addEventListener('click', () => {
-      this.nextSlide();
+    this.next.forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.nextSlide();
+      });
     });
   }
 
@@ -197,25 +385,31 @@ class MiniSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
     this.decorizeSlides();
   }
   render() {
-    this.container.style.cssText = `
-            display: flex;
-            flex-wrap: wrap;
-            overflow: hidden;
-            align-items: flex-start;
-        `;
-    this.decorizeSlides();
-    this.bindTriggers();
-    if (this.btns) {
-      this.bindBtns();
-    }
-    if (this.autoplay) {
-      this.activeShowSlide();
-      this.container.addEventListener('mouseenter', () => {
-        clearInterval(this.interval);
-      });
-      this.container.addEventListener('mouseleave', () => {
+    try {
+      this.container.style.cssText = `
+                    display: flex;
+                    flex-wrap: wrap;
+                    overflow: hidden;
+                    align-items: flex-start;
+                `;
+      this.decorizeSlides();
+      this.bindTriggers();
+      if (this.btns) {
+        this.bindBtns();
+      }
+      if (this.autoplay) {
         this.activeShowSlide();
-      });
+        this.container.addEventListener('mouseenter', () => {
+          clearInterval(this.interval);
+        });
+        this.container.addEventListener('mouseleave', () => {
+          this.activeShowSlide();
+        });
+      }
+    } catch (e) {
+      if (e.name !== 'TypeError') {
+        throw e;
+      }
     }
   }
 }
@@ -235,6 +429,7 @@ __webpack_require__.r(__webpack_exports__);
 class Slider {
   constructor({
     container = null,
+    slides = null,
     btns = null,
     prev = null,
     next = null,
@@ -243,9 +438,13 @@ class Slider {
     autoplay
   } = {}) {
     this.container = document.querySelector(container);
+    try {
+      this.slides = this.container.querySelectorAll(slides);
+    } catch (e) {}
+    ;
     this.btns = document.querySelectorAll(btns);
-    this.prev = document.querySelector(prev);
-    this.next = document.querySelector(next);
+    this.prev = document.querySelectorAll(prev);
+    this.next = document.querySelectorAll(next);
     this.activeClass = activeClass;
     this.animate = animate;
     this.autoplay = autoplay;
@@ -381,6 +580,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_videoPlayer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/videoPlayer */ "./src/js/modules/videoPlayer.js");
 /* harmony import */ var _modules_slider_slider_mini__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/slider/slider-mini */ "./src/js/modules/slider/slider-mini.js");
 /* harmony import */ var _modules_difference__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/difference */ "./src/js/modules/difference.js");
+/* harmony import */ var _modules_forms__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/forms */ "./src/js/modules/forms.js");
+
 
 
 
@@ -393,10 +594,17 @@ window.addEventListener('DOMContentLoaded', () => {
     slides: '.slide-main',
     btns: '.next'
   }).render();
-  const player = new _modules_videoPlayer__WEBPACK_IMPORTED_MODULE_1__["default"]('.showup .play', '.overlay');
-  player.init();
+  const sliderMainModuleApp = new _modules_slider_slider_main__WEBPACK_IMPORTED_MODULE_0__["default"]({
+    container: '.moduleapp',
+    slides: '.module',
+    btns: '.next',
+    prev: '.prevmodule',
+    next: '.nextmodule'
+  }).render();
+  new _modules_videoPlayer__WEBPACK_IMPORTED_MODULE_1__["default"]('.showup .play', '.overlay').init();
   const showUpSlider = new _modules_slider_slider_mini__WEBPACK_IMPORTED_MODULE_2__["default"]({
     container: '.showup__content-slider',
+    slides: '.slide-mini',
     prev: '.showup__prev',
     next: '.showup__next',
     btns: '.card__controls-arrow',
@@ -405,6 +613,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }).render();
   const modulesSlider = new _modules_slider_slider_mini__WEBPACK_IMPORTED_MODULE_2__["default"]({
     container: '.modules__content-slider',
+    slides: '.slide-mini',
     prev: '.slick-prev',
     next: '.slick-next',
     btns: '.card__controls-arrow',
@@ -414,12 +623,14 @@ window.addEventListener('DOMContentLoaded', () => {
   }).render();
   const feedSlider = new _modules_slider_slider_mini__WEBPACK_IMPORTED_MODULE_2__["default"]({
     container: '.feed__slider',
+    slides: '.slide-mini',
     prev: '.feed_prev',
     next: '.feed_next',
     activeClass: 'feed__item-active'
   }).render();
-  const differenceTenYers = new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officerold', '.officer__card-item').render();
-  const differenceNow = new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officernew', '.officer__card-item').render();
+  new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officerold', '.officer__card-item').render();
+  new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officernew', '.officer__card-item').render();
+  new _modules_forms__WEBPACK_IMPORTED_MODULE_4__["default"]('form', 'assets/question.php').submitForms();
 });
 /******/ })()
 ;

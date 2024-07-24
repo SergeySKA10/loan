@@ -1,9 +1,8 @@
 import Slider from "./slider";
 
 export default class MainSlider extends Slider {
-    constructor(container, slides, btns) {
-        super(container, btns);
-        this.slides = this.container.querySelectorAll('.slide-main');
+    constructor(container, slides, btns, next, prev) {
+        super(container, slides, btns, next, prev);
     }
 
     showSlides(n) {
@@ -21,7 +20,7 @@ export default class MainSlider extends Slider {
 
         // добавление и удаление всплывающего блока на 3-тьем слайдере
         try {
-            if (n == 3) {
+            if (n == 3 && this.hansonBlock) {
                 setTimeout(() => {
                     this.hansonBlock.classList.add('slideInLeft');
                     this.hansonBlock.style.display = 'block';
@@ -42,29 +41,50 @@ export default class MainSlider extends Slider {
         this.showSlides(this.slideIndex += n)
     }
 
-    render() {
-        
-        // получение всплывающего блока
-        try {
-            this.hansonBlock = document.querySelector('.hanson');
-            this.hansonBlock.style.display = 'none';
-            this.hansonBlock.classList.add('animated');
-        } catch(e) {}
+    // функция переключения слайдов при событии 'click' на триггеры && logo
+    bindBtn() {
+        this.bindTriggers(this.btns, 1, true);
 
-        this.btns.forEach(btn => {
+        if (this.next && this.prev) {
+            this.bindTriggers(this.next, 1);
+            this.bindTriggers(this.prev, -1);
+        }
+    }
+
+    // функция привязки обработчика 'click' к триггерам 
+    bindTriggers(triggers, i, logo) {
+        triggers.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.plusSlides(1);
+                e.stopPropagation();
+                this.plusSlides(i);
             });
-
-            // при клике на логотип - возвращаемся к 1 слайду
-            btn.parentNode.previousElementSibling.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.slideIndex = 1;
-                this.showSlides(this.slideIndex);
-            })
+            
+            if (logo) {
+                // при клике на логотип - возвращаемся к 1 слайду
+                btn.parentNode.previousElementSibling.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.slideIndex = 1;
+                    this.showSlides(this.slideIndex);
+                });
+            }
         });
-
-        this.showSlides(this.slideIndex);
     }
+
+    render() {
+        // проверка на наличие свойства this.container
+        if (this.container) {
+            // получение всплывающего блока
+            try {
+                this.hansonBlock = document.querySelector('.hanson');
+                this.hansonBlock.style.display = 'none';
+                this.hansonBlock.classList.add('animated');
+            } catch(e) {}
+    
+            this.bindBtn();
+            
+            this.showSlides(this.slideIndex);  
+        }
+    }
+
 }

@@ -3,17 +3,16 @@ import Slider from "./slider";
 export default class MiniSlider extends Slider {
     constructor(container, slides, prev, next, activeClass, animate, autoplay) {
         super(container, slides, next, prev, activeClass, animate, autoplay);
-        this.slides = this.container.querySelectorAll('.slide-mini');
-        this.slideCollection = this.createCollectionSlides(); // добавляем NodeList в массив для последующей работы с использованием методов массивов
+
+        try {
+            this.slideCollection = this.createCollectionSlides(); // добавляем NodeList в массив для последующей работы с использованием методов массивов
+        } catch(e) {}
+        
         this.interval = false;
     }
 
     // добавляем стилей для активых мини-слайдов
     decorizeSlides() {
-        for (let i = 0; i < this.slideCollection.length; i++) {
-            this.slideCollection[i]
-        }
-        
         this.slideCollection.forEach(slide => {
             slide.classList.remove(this.activeClass);
 
@@ -58,16 +57,21 @@ export default class MiniSlider extends Slider {
     }
 
     bindTriggers() {
-        this.prev.addEventListener('click', () => {
-            let activeSlide = this.slideCollection[this.slideCollection.length - 1];
-            this.container.insertBefore(activeSlide, this.slideCollection[0]);
-            let elementPop = this.slideCollection.pop(this.slideCollection.length - 1);
-            this.slideCollection.unshift(elementPop);
-            this.decorizeSlides();
+        this.prev.forEach(btn => {
+            btn.addEventListener('click', () => {
+                let activeSlide = this.slideCollection[this.slideCollection.length - 1];
+                this.container.insertBefore(activeSlide, this.slideCollection[0]);
+                let elementPop = this.slideCollection.pop(this.slideCollection.length - 1);
+                this.slideCollection.unshift(elementPop);
+                this.decorizeSlides();
+            });
         });
+        
 
-        this.next.addEventListener('click', () => {
-            this.nextSlide();
+        this.next.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.nextSlide();
+            });
         });
     }
 
@@ -80,30 +84,37 @@ export default class MiniSlider extends Slider {
     }
 
     render() {
-        this.container.style.cssText = `
-            display: flex;
-            flex-wrap: wrap;
-            overflow: hidden;
-            align-items: flex-start;
-        `;
+        try {
+            this.container.style.cssText = `
+                    display: flex;
+                    flex-wrap: wrap;
+                    overflow: hidden;
+                    align-items: flex-start;
+                `;
 
-        this.decorizeSlides();
-        this.bindTriggers();
+            this.decorizeSlides();
+            this.bindTriggers();
 
-        if (this.btns) {
-            this.bindBtns();
-        }
+            if (this.btns) {
+                this.bindBtns();
+            }
 
-        if (this.autoplay) {
-            this.activeShowSlide();
-
-            this.container.addEventListener('mouseenter', () => {
-                clearInterval(this.interval);
-            });
-
-            this.container.addEventListener('mouseleave', () => {
+            if (this.autoplay) {
                 this.activeShowSlide();
-            });
-        } 
-    }
+
+                this.container.addEventListener('mouseenter', () => {
+                    clearInterval(this.interval);
+                });
+
+                this.container.addEventListener('mouseleave', () => {
+                    this.activeShowSlide();
+                });
+            } 
+        } catch(e) {
+            if (e.name !== 'TypeError') {
+                throw e;
+            }
+        }
+    } 
+        
 }
