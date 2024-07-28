@@ -65,6 +65,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     new Download('.download').init();
 
-    new VideoPlayer('.play__circle', '.overlay');
+    new VideoPlayer('.module__video-item .play', '.overlay').init();
 
 });

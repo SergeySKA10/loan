@@ -173,6 +173,8 @@ class Form {
       successIcons: 'assets/icons/ok.png'
     };
   }
+
+  // маска номера
   createMaskNumber() {
     const inputs = document.querySelectorAll('[name="phone"]');
     const createMask = function (event) {
@@ -196,6 +198,7 @@ class Form {
         setCursorPosition(this.value.length, this);
       }
     };
+    // установка курсора
     let setCursorPosition = (pos, elem) => {
       elem.focus();
       if (elem.setSelectionRange) {
@@ -215,6 +218,7 @@ class Form {
       input.addEventListener('blur', createMask);
     });
   }
+  // валидация email
   checkEmailInput() {
     const emailInputs = document.querySelectorAll('[name="email"]');
     emailInputs.forEach(item => {
@@ -230,6 +234,7 @@ class Form {
       });
     });
   }
+  // валидация input="name"
   checkTextInput() {
     const textInputs = document.querySelectorAll('[name="name"]');
     textInputs.forEach(input => {
@@ -569,21 +574,79 @@ class VideoPlayer {
     this.triggers = document.querySelectorAll(triggers);
     this.overlay = document.querySelector(overlay);
     this.close = this.overlay.querySelector('.close');
+    this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
   }
 
   // Обработчик событя для открытия overlay, получения и отображения видео
   bindBtns() {
-    this.triggers.forEach(btn => {
+    this.triggers.forEach((btn, i) => {
+      try {
+        // блок кода для 2-ой страницы для установки атрибута data-disabled
+        const blockElem = btn.closest('.module__video-item').nextElementSibling;
+        if (i % 2 === 0) {
+          blockElem.setAttribute('data-disabled', 'true');
+        }
+      } catch (e) {
+        if (e.name !== 'TypeError') {
+          throw e;
+        } else {
+          console.log(e.message);
+        }
+      }
       btn.addEventListener('click', () => {
-        this.overlay.style.display = 'flex';
+        // проверка на отсутствие кнопки для избежания ошибки и атрибута data-disabled для исключения заблокированных btn
+        if (!btn.closest('.module__video-item') || btn.closest('.module__video-item').getAttribute('data-disabled') !== 'true') {
+          this.activeBtn = btn; // действующая кнопка 
 
-        // проверка на отсутствие блока 'iframe#frame' в верстке
-        //if (!document.querySelector('iframe#frame')) {
-        const path = btn.getAttribute('data-url');
-        this.createPlayer(path);
-        //}  
+          if (document.querySelector('iframe#frame')) {
+            this.overlay.style.display = 'flex';
+
+            // проверяем path на равенство с атрибутом btn (и открываем нужное видео по id)
+            if (this.path !== btn.getAttribute('data-url')) {
+              this.path = btn.getAttribute('data-url');
+              this.player.loadVideoById({
+                videoId: this.path
+              });
+            }
+          } else {
+            // создаем динамический path зависщий от атрибута btn и создаем плеер
+            this.overlay.style.display = 'flex';
+            this.path = btn.getAttribute('data-url');
+            this.createPlayer(this.path);
+          }
+        }
       });
     });
+  }
+
+  // метод для реализации события 'onStateChange' в плеере
+  onPlayerStateChange(state) {
+    try {
+      const blockElem = this.activeBtn.closest('.module__video-item').nextElementSibling,
+        playBtn = this.activeBtn.querySelector('svg').cloneNode(true);
+      if (state.data === 0) {
+        // при окончании видео
+        blockElem.querySelector('.play__circle').classList.remove('closed');
+        if (!blockElem.querySelector('.play__circle').classList.contains('closed')) {
+          blockElem.querySelector('svg').remove();
+          blockElem.querySelector('.play__circle').append(playBtn);
+          blockElem.querySelector('.play__text').textContent = 'play video';
+          blockElem.querySelector('.play__text').classList.remove('attention');
+          blockElem.style.cssText = `
+                        opacity: 1;
+                        filter: none;
+                    `;
+          // разблокировка кнопки для просмота видео
+          blockElem.setAttribute('data-disabled', 'false');
+        }
+      }
+    } catch (e) {
+      if (e.name !== 'TypeError') {
+        throw e;
+      } else {
+        console.log(e.message);
+      }
+    }
   }
 
   // обработчик на close
@@ -591,29 +654,30 @@ class VideoPlayer {
     this.close.addEventListener('click', () => {
       this.overlay.style.display = 'none';
       this.player.stopVideo(); // остановка видео
-      this.player.destroy();
-      const div = document.createElement('div');
-      div.setAttribute('id', 'frame');
-      this.overlay.document.querySelector('.video').append(div);
     });
   }
 
   // функция получения видео
-  async createPlayer(url) {
-    this.player = await new YT.Player('frame', {
+  createPlayer(url) {
+    this.player = new YT.Player('frame', {
       height: '100%',
       width: '100%',
-      videoId: url
+      videoId: url,
+      events: {
+        'onStateChange': this.onPlayerStateChange
+      }
     });
   }
   init() {
-    // ассинхронное подключение YouTube API 
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    this.bindBtns();
-    this.bindClose();
+    if (this.triggers.length > 0) {
+      // ассинхронное подключение YouTube API 
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      this.bindBtns();
+      this.bindClose();
+    }
   }
 }
 
@@ -741,7 +805,7 @@ window.addEventListener('DOMContentLoaded', () => {
   new _modules_forms__WEBPACK_IMPORTED_MODULE_4__["default"]('form', 'assets/question.php').submitForms();
   new _modules_accordion__WEBPACK_IMPORTED_MODULE_5__["default"]('.plus__content', '.msg').render();
   new _modules_download__WEBPACK_IMPORTED_MODULE_6__["default"]('.download').init();
-  new _modules_videoPlayer__WEBPACK_IMPORTED_MODULE_1__["default"]('.play__circle', '.overlay');
+  new _modules_videoPlayer__WEBPACK_IMPORTED_MODULE_1__["default"]('.module__video-item .play', '.overlay').init();
 });
 /******/ })()
 ;

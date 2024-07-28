@@ -12,6 +12,7 @@ export default class Form {
         };
     }
 
+    // маска номера
     createMaskNumber() {
         const inputs = document.querySelectorAll('[name="phone"]');
 
@@ -40,7 +41,7 @@ export default class Form {
                 setCursorPosition(this.value.length, this);
             }
         }
-    
+        // установка курсора
         let setCursorPosition = (pos, elem) => {
             elem.focus();
      
@@ -63,7 +64,7 @@ export default class Form {
             input.addEventListener('blur', createMask);
         });
     }
-
+    // валидация email
     checkEmailInput() {
         const emailInputs = document.querySelectorAll('[name="email"]');
 
@@ -81,7 +82,7 @@ export default class Form {
             });
         });
     }
-
+    // валидация input="name"
     checkTextInput() {
         const textInputs = document.querySelectorAll('[name="name"]');
 
