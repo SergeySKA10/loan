@@ -2,6 +2,69 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./src/js/modules/accordion.js":
+/*!*************************************!*\
+  !*** ./src/js/modules/accordion.js ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Accordion)
+/* harmony export */ });
+class Accordion {
+  constructor(triggers, contents) {
+    this.triggers = document.querySelectorAll(triggers);
+    this.contents = document.querySelectorAll(contents);
+  }
+  addStyles(elems) {
+    elems.forEach(el => {
+      el.style.marginTop = '20px';
+      el.classList.add('animated', 'fadeInUp');
+    });
+  }
+  render() {
+    this.addStyles(this.contents);
+    this.triggers.forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        try {
+          this.contents[i].classList.toggle('msg');
+        } catch (e) {
+          if (e.name !== 'TypeError') {
+            throw e;
+          } else {
+            console.log(e.message);
+          }
+        }
+        try {
+          if (!this.contents[i].classList.contains('msg')) {
+            btn.querySelector('svg').style.cssText = `
+                            transition: all 0.8s;
+                            transform: rotate(45deg) translateX(-8px);
+                        `;
+            btn.style.background = 'red';
+          }
+          if (this.contents[i].classList.contains('msg')) {
+            btn.querySelector('svg').style.cssText = `
+                        transition: all 0.8s;
+                        transform: translateX(-50%) translateY(-50%);
+                        `;
+            btn.style.background = '#9ec73d';
+          }
+        } catch (e) {
+          if (e.name !== 'TypeError') {
+            throw e;
+          } else {
+            console.log(e.message);
+          }
+        }
+      });
+    });
+  }
+}
+
+/***/ }),
+
 /***/ "./src/js/modules/difference.js":
 /*!**************************************!*\
   !*** ./src/js/modules/difference.js ***!
@@ -43,8 +106,45 @@ class Difference {
     } catch (e) {
       if (e.name !== 'TypeError') {
         throw e;
+      } else {
+        console.log(e.message);
       }
     }
+  }
+}
+
+/***/ }),
+
+/***/ "./src/js/modules/download.js":
+/*!************************************!*\
+  !*** ./src/js/modules/download.js ***!
+  \************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Download)
+/* harmony export */ });
+class Download {
+  constructor(triggers) {
+    this.triggers = document.querySelectorAll(triggers);
+    this.paths = ['assets/img/Bitmap.jpg', 'assets/img/evolve.jpg', 'assets/img/evolve6.jpg', 'assets/img/showup6.jpg', 'assets/img/talk_bg.jpg', 'assets/img/mainbg.jpg', 'assets/img/module_bg.jpg', 'assets/img/showup.jpg'];
+  }
+  downloadPicture(path, n) {
+    const link = document.createElement('a');
+    link.setAttribute('href', path);
+    link.setAttribute('download', `picture_loan${n}`);
+    link.style.display = 'none';
+    document.body.append(link);
+    link.click();
+    link.remove();
+  }
+  init() {
+    this.triggers.forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        this.downloadPicture(this.paths[i], i + 1);
+      });
+    });
   }
 }
 
@@ -478,10 +578,10 @@ class VideoPlayer {
         this.overlay.style.display = 'flex';
 
         // проверка на отсутствие блока 'iframe#frame' в верстке
-        if (!document.querySelector('iframe#frame')) {
-          const path = btn.getAttribute('data-url');
-          this.createPlayer(path);
-        }
+        //if (!document.querySelector('iframe#frame')) {
+        const path = btn.getAttribute('data-url');
+        this.createPlayer(path);
+        //}  
       });
     });
   }
@@ -491,6 +591,10 @@ class VideoPlayer {
     this.close.addEventListener('click', () => {
       this.overlay.style.display = 'none';
       this.player.stopVideo(); // остановка видео
+      this.player.destroy();
+      const div = document.createElement('div');
+      div.setAttribute('id', 'frame');
+      this.overlay.document.querySelector('.video').append(div);
     });
   }
 
@@ -581,6 +685,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_slider_slider_mini__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/slider/slider-mini */ "./src/js/modules/slider/slider-mini.js");
 /* harmony import */ var _modules_difference__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/difference */ "./src/js/modules/difference.js");
 /* harmony import */ var _modules_forms__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/forms */ "./src/js/modules/forms.js");
+/* harmony import */ var _modules_accordion__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/accordion */ "./src/js/modules/accordion.js");
+/* harmony import */ var _modules_download__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modules/download */ "./src/js/modules/download.js");
+
+
 
 
 
@@ -631,6 +739,9 @@ window.addEventListener('DOMContentLoaded', () => {
   new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officerold', '.officer__card-item').render();
   new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officernew', '.officer__card-item').render();
   new _modules_forms__WEBPACK_IMPORTED_MODULE_4__["default"]('form', 'assets/question.php').submitForms();
+  new _modules_accordion__WEBPACK_IMPORTED_MODULE_5__["default"]('.plus__content', '.msg').render();
+  new _modules_download__WEBPACK_IMPORTED_MODULE_6__["default"]('.download').init();
+  new _modules_videoPlayer__WEBPACK_IMPORTED_MODULE_1__["default"]('.play__circle', '.overlay');
 });
 /******/ })()
 ;

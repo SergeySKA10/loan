@@ -5,6 +5,8 @@ import VideoPlayer from "./modules/videoPlayer";
 import MiniSlider from "./modules/slider/slider-mini";
 import Difference from "./modules/difference";
 import Form from "./modules/forms";
+import Accordion from "./modules/accordion";
+import Download from "./modules/download";
 
 window.addEventListener('DOMContentLoaded', () => {
     
@@ -54,10 +56,15 @@ window.addEventListener('DOMContentLoaded', () => {
     }).render();
 
     new Difference('.officerold', '.officer__card-item').render();
+
     new Difference('.officernew', '.officer__card-item').render(); 
 
     new Form('form', 'assets/question.php').submitForms();
 
-    
+    new Accordion('.plus__content', '.msg').render();
+
+    new Download('.download').init();
+
+    new VideoPlayer('.play__circle', '.overlay');
 
 });

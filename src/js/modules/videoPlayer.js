@@ -13,10 +13,10 @@ export default class VideoPlayer {
                 this.overlay.style.display = 'flex';
 
                 // проверка на отсутствие блока 'iframe#frame' в верстке
-                if (!document.querySelector('iframe#frame')) {
-                    const path = btn.getAttribute('data-url');   
-                    this.createPlayer(path);
-                }  
+                //if (!document.querySelector('iframe#frame')) {
+                const path = btn.getAttribute('data-url');   
+                this.createPlayer(path);
+                //}  
             });
         });   
     }
@@ -26,6 +26,11 @@ export default class VideoPlayer {
         this.close.addEventListener('click', () => {
             this.overlay.style.display = 'none';
             this.player.stopVideo(); // остановка видео
+            this.player.destroy();
+
+            const div = document.createElement('div');
+            div.setAttribute('id', 'frame');
+            this.overlay.document.querySelector('.video').append(div);
         });
     }
 

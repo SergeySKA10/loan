@@ -36,6 +36,8 @@ export default class Difference {
         } catch(e) {
             if (e.name !== 'TypeError') {
                 throw e;
+            } else {
+                console.log(e.message);
             }
         }
     }
