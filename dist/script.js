@@ -141,7 +141,9 @@ class Download {
   }
   init() {
     this.triggers.forEach((btn, i) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
         this.downloadPicture(this.paths[i], i + 1);
       });
     });
@@ -306,6 +308,45 @@ class Form {
           }, 4000);
         });
       });
+    });
+  }
+}
+
+/***/ }),
+
+/***/ "./src/js/modules/showPage.js":
+/*!************************************!*\
+  !*** ./src/js/modules/showPage.js ***!
+  \************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ShowPage)
+/* harmony export */ });
+class ShowPage {
+  constructor(btnsSelector) {
+    this.btns = document.querySelectorAll(btnsSelector);
+    this.url = {
+      loan: 'http://localhost:4000/',
+      modules: 'http://localhost:4000/modules.html'
+    };
+  }
+  show(btn) {
+    btn.addEventListener('click', () => {
+      switch (btn.getAttribute('data-url')) {
+        case '1':
+          location.href = 'http://localhost:4000/modules.html';
+          break;
+        case '2':
+          location.href = 'http://localhost:4000/';
+          break;
+      }
+    });
+  }
+  render() {
+    this.btns.forEach(btn => {
+      this.show(btn);
     });
   }
 }
@@ -751,6 +792,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_forms__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/forms */ "./src/js/modules/forms.js");
 /* harmony import */ var _modules_accordion__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/accordion */ "./src/js/modules/accordion.js");
 /* harmony import */ var _modules_download__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modules/download */ "./src/js/modules/download.js");
+/* harmony import */ var _modules_showPage__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./modules/showPage */ "./src/js/modules/showPage.js");
+
 
 
 
@@ -806,6 +849,7 @@ window.addEventListener('DOMContentLoaded', () => {
   new _modules_accordion__WEBPACK_IMPORTED_MODULE_5__["default"]('.plus__content', '.msg').render();
   new _modules_download__WEBPACK_IMPORTED_MODULE_6__["default"]('.download').init();
   new _modules_videoPlayer__WEBPACK_IMPORTED_MODULE_1__["default"]('.module__video-item .play', '.overlay').init();
+  new _modules_showPage__WEBPACK_IMPORTED_MODULE_7__["default"]('[data-url]').render();
 });
 /******/ })()
 ;

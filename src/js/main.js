@@ -7,6 +7,7 @@ import Difference from "./modules/difference";
 import Form from "./modules/forms";
 import Accordion from "./modules/accordion";
 import Download from "./modules/download";
+import ShowPage from "./modules/showPage";
 
 window.addEventListener('DOMContentLoaded', () => {
     
@@ -66,5 +67,7 @@ window.addEventListener('DOMContentLoaded', () => {
     new Download('.download').init();
 
     new VideoPlayer('.module__video-item .play', '.overlay').init();
+
+    new ShowPage('[data-url]').render();
 
 });

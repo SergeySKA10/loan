@@ -10,7 +10,7 @@ export default class Download {
             'assets/img/mainbg.jpg',
             'assets/img/module_bg.jpg',
             'assets/img/showup.jpg'
-        ]
+        ];
     }
 
     downloadPicture(path, n) {
@@ -21,16 +21,17 @@ export default class Download {
         link.style.display = 'none';
 
         document.body.append(link);
-        
+
         link.click();
-            
-        link.remove();  
-        
+
+        link.remove(); 
     }
 
     init() {
         this.triggers.forEach((btn, i) => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 this.downloadPicture(this.paths[i], i+1);
             });
         });
